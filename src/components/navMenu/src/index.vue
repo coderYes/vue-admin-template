@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, withDefaults, defineAsyncComponent } from 'vue'
 import { useRoute } from 'vue-router'
-import { IMenuType } from '@/utils/menu'
+import type { IMenuType } from '@/store/permission'
 const SubItem = defineAsyncComponent(() => import('./SubItem.vue'))
 const route = useRoute()
 const defaultActive = computed(() => {

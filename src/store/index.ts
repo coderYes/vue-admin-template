@@ -1,15 +1,4 @@
-import { defineStore } from 'pinia'
+import { createPinia } from 'pinia'
+const store = createPinia()
 
-export const useCommonStore = defineStore('test', {
-  state: () => {
-    return {
-      count: 0
-    }
-  },
-  getters: {},
-  actions: {
-    setCount() {
-      this.count++
-    }
-  }
-})
+export default store

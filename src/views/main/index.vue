@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, defineAsyncComponent } from 'vue'
-import type { IMenuType } from '@/utils/menu'
+import type { IMenuType } from '@/store/permission'
 import getRouter from '@/mock/getRouter'
 const NavMenu = defineAsyncComponent(() => import('@/components/navMenu'))
 const collapsed = ref(false)
