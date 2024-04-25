@@ -8,6 +8,8 @@ const defaultActive = computed(() => {
   return route.path
 })
 
+const emit = defineEmits(['onMenuItemClick'])
+
 withDefaults(
   defineProps<{
     menu: IMenuType[]
@@ -17,6 +19,10 @@ withDefaults(
     collapse: false
   }
 )
+
+const handleMenuItemClick = (m: IMenuType) => {
+  emit('onMenuItemClick', m)
+}
 </script>
 
 <template>
@@ -34,10 +40,10 @@ withDefaults(
           <el-icon> <component :is="m.icon" /></el-icon>
           <span>{{ m.name }}</span>
         </template>
-        <SubItem :children="m.children" />
+        <SubItem :children="m.children" @onSubMenuItemClick="handleMenuItemClick" />
       </el-sub-menu>
       <template v-else>
-        <el-menu-item :index="m.path" :key="m.path">
+        <el-menu-item :index="m.path" :key="m.path" @click="handleMenuItemClick(m)">
           <el-icon> <component :is="m.icon" /></el-icon>
           <span>{{ m.name }}</span>
         </el-menu-item>

@@ -1,23 +1,23 @@
 <script setup lang="ts">
 import { computed, ref, defineAsyncComponent } from 'vue'
 import type { IMenuType } from '@/store/permission'
+import type { TabsPaneContext, TabPaneName } from 'element-plus'
 import getRouter from '@/mock/getRouter'
+import { requireAssetsImg } from '@/utils/common'
+import { useRouter } from 'vue-router'
+const router = useRouter()
 const NavMenu = defineAsyncComponent(() => import('@/components/navMenu'))
+
+interface ITabsType {
+  key: number
+  label: string
+  path: string
+}
+
 const collapsed = ref(false)
 const menu = ref<IMenuType[]>([])
-const editableTabsValue = ref('2')
-const editableTabs = ref([
-  {
-    title: 'Tab 1',
-    name: '1',
-    content: 'Tab 1 content'
-  },
-  {
-    title: 'Tab 2',
-    name: '2',
-    content: 'Tab 2 content'
-  }
-])
+const activeName = ref('')
+const tabsList = ref<ITabsType[]>([])
 
 const init = async () => {
   getRouter().then((res) => {
@@ -37,12 +37,48 @@ const collapseStyle = computed(() => {
 const toggleCollapsed = () => {
   collapsed.value = !collapsed.value
 }
+
+const onMenuItemClick = (menu: IMenuType) => {
+  const isCurrent = tabsList.value.findIndex((item) => item.key === menu.id) === -1
+  if (isCurrent) {
+    const tabs = {
+      key: menu.id,
+      label: menu.name,
+      path: menu.componentPath
+    }
+    tabsList.value.push(tabs)
+  }
+
+  activeName.value = menu.name
+}
+const handleTabClick = (pane: TabsPaneContext | string) => {
+  const paneValue = typeof pane === 'object' ? pane.props.name : pane
+  const current = tabsList.value.findIndex((item) => item.label === paneValue)
+  if (current === -1) return
+  const { label, path } = tabsList.value[current]
+  activeName.value = label
+  router.push(path)
+}
+const handleTabRemove = (name: TabPaneName) => {
+  if (tabsList.value.length < 2) return
+  if (name === activeName.value) {
+    const index = tabsList.value.findIndex((item) => item.label === name)
+    const tab = tabsList.value[index + 1] || tabsList.value[index - 1]
+    handleTabClick(tab.label)
+    activeName.value = tab.label
+  }
+  tabsList.value = tabsList.value.filter((item) => item.label !== name)
+}
 </script>
 <template>
   <div class="h-full">
     <el-container class="h-full">
       <el-aside class="transition-[width]" :class="collapseStyle">
-        <NavMenu :menu :collapse="collapsed" />
+        <div class="sidebar-logo-container">
+          <img class="w-[32px] h-[32px]" :src="requireAssetsImg('image/vue.svg')" alt="" />
+          <div v-if="!collapsed" class="ml-3">admin模板</div>
+        </div>
+        <NavMenu :menu="menu" :collapse="collapsed" @onMenuItemClick="onMenuItemClick" />
       </el-aside>
       <el-container>
         <el-header class="h-auto">
@@ -60,14 +96,19 @@ const toggleCollapsed = () => {
             </div>
           </div>
           <div class="tabs">
-            <el-tabs v-model="editableTabsValue" type="card" closable>
+            <el-tabs
+              v-model="activeName"
+              type="card"
+              closable
+              @tab-click="handleTabClick"
+              @tab-remove="handleTabRemove"
+            >
               <el-tab-pane
-                v-for="item in editableTabs"
-                :key="item.name"
-                :label="item.title"
-                :name="item.name"
+                v-for="item in tabsList"
+                :key="item.key"
+                :label="item.label"
+                :name="item.label"
               >
-                {{ item.content }}
               </el-tab-pane>
             </el-tabs>
           </div>
@@ -82,6 +123,15 @@ const toggleCollapsed = () => {
 
 <style lang="scss">
 .el-aside {
+  .sidebar-logo-container {
+    position: relative;
+    width: 100%;
+    height: 50px;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
   &::-webkit-scrollbar {
     display: none;
   }
